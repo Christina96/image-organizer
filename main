@@ -1,0 +1,64 @@
+import tkinter as tk
+from tkinter import filedialog
+from PIL import Image, ImageDraw, ImageFont
+import os
+from datetime import datetime
+
+def open_image():
+    file_path = filedialog.askopenfilename(filetypes=[("Image Files", "*.jpg;*.jpeg;*.png")])
+    if file_path:
+        image = Image.open(file_path)
+        return image
+
+def add_watermark(image):
+    watermark_text = "Your Watermark"
+    watermark_font = ImageFont.truetype("arial.ttf", 50)
+    watermark_color = "white"
+
+    draw = ImageDraw.Draw(image)
+    draw.text((10, 10), watermark_text, font=watermark_font, fill=watermark_color)
+
+    return image
+
+def save_image(image):
+    save_dir = filedialog.askdirectory()
+    if save_dir:
+        # Get current date for folder name
+        current_date = datetime.now().strftime("%Y-%m-%d")
+
+        # Create folder if it doesn't exist
+        folder_path = os.path.join(save_dir, current_date)
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+
+        # Get image format (e.g., ".png")
+        image_format = os.path.splitext(image.filename)[1]
+
+        # Generate file name based on timestamp
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        file_name = f"image_{timestamp}{image_format}"
+
+        # Save image to appropriate folder
+        file_path = os.path.join(folder_path, file_name)
+        image.save(file_path)
+
+def upload_and_watermark():
+    image = open_image()
+    if image:
+        image_with_watermark = add_watermark(image)
+        save_image(image_with_watermark)
+        status_label.config(text="Watermark added and image saved.")
+
+# Create main window
+root = tk.Tk()
+root.title("Image Watermarking Tool")
+
+# Create widgets
+upload_button = tk.Button(root, text="Upload Image", command=upload_and_watermark)
+upload_button.pack(pady=20)
+
+status_label = tk.Label(root, text="")
+status_label.pack()
+
+# Run the application
+root.mainloop()
